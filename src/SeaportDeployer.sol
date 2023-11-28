@@ -10,6 +10,28 @@ library SeaportDeployer {
     	function() internal pure returns (address) deploymentTarget;
     	function() internal pure returns (bytes memory) deploymentCall;
     	function() internal pure returns (address) deploymentAddress;
+    	function(address) internal view returns (bool) configurationCheck;
+	}
+
+	function deploymentCheck(address deploymentAddress) internal view returns (bool) {
+		return deploymentAddress.code.length != 0;
+	}
+
+	function channelCheck(address) internal view returns (bool) {
+		(bool success, bytes memory returnData) = conduitControllerDeploymentAddress().staticcall(abi.encodeWithSelector(
+			bytes4(0x33bc8572),
+			conduitDeploymentAddress(),
+			seaportOnePointFiveDeploymentAddress()
+		));
+
+		if (!success) {
+			assembly {
+				returndatacopy(0, 0, returndatasize())
+				revert(0, returndatasize())
+			}
+		}
+
+		return abi.decode(returnData, (bool));
 	}
 
 	// Step 1: get the basic create2 factory contract set up. This is done
@@ -41,7 +63,8 @@ library SeaportDeployer {
 		return DeploymentOperation({
 			deploymentTarget: initialImmutableCreate2FactoryDeploymentTarget,
 			deploymentCall: initialImmutableCreate2FactoryDeploymentCall,
-			deploymentAddress: initialImmutableCreate2FactoryDeploymentAddress
+			deploymentAddress: initialImmutableCreate2FactoryDeploymentAddress,
+			configurationCheck: deploymentCheck
 		});
 	}
 
@@ -63,7 +86,8 @@ library SeaportDeployer {
 		return DeploymentOperation({
 			deploymentTarget: immutableCreate2FactoryDeploymentTarget,
 			deploymentCall: immutableCreate2FactoryDeploymentCall,
-			deploymentAddress: immutableCreate2FactoryDeploymentAddress
+			deploymentAddress: immutableCreate2FactoryDeploymentAddress,
+			configurationCheck: deploymentCheck
 		});
 	}
 
@@ -84,7 +108,8 @@ library SeaportDeployer {
 		return DeploymentOperation({
 			deploymentTarget: conduitControllerDeploymentTarget,
 			deploymentCall: conduitControllerDeploymentCall,
-			deploymentAddress: conduitControllerDeploymentAddress
+			deploymentAddress: conduitControllerDeploymentAddress,
+			configurationCheck: deploymentCheck
 		});
 	}
 
@@ -105,18 +130,97 @@ library SeaportDeployer {
 		return DeploymentOperation({
 			deploymentTarget: seaportOnePointFiveDeploymentTarget,
 			deploymentCall: seaportOnePointFiveDeploymentCall,
-			deploymentAddress: seaportOnePointFiveDeploymentAddress
+			deploymentAddress: seaportOnePointFiveDeploymentAddress,
+			configurationCheck: deploymentCheck
+		});
+	}
+
+	// Step 6 (only relevant when deploying the OpenSea conduit): deploy the "conduit creator"
+	function conduitCreatorDeploymentTarget() internal pure returns (address) {
+		return immutableCreate2FactoryDeploymentAddress();
+	}
+
+	function conduitCreatorDeploymentCall() internal pure returns (bytes memory) {
+		return hex"64e030870000000000000000000000000000000000000000670557d7216e7f056f070000000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000004a160a060405234801561001057600080fd5b5060405161048138038061048183398101604081905261002f91610040565b6001600160a01b0316608052610070565b60006020828403121561005257600080fd5b81516001600160a01b038116811461006957600080fd5b9392505050565b6080516103e96100986000396000818160a801528181610150015261020301526103e96000f3fe608060405234801561001057600080fd5b50600436106100415760003560e01c80630b9a2c92146100465780636b760a941461005b578063c773d1ee1461006e575b600080fd5b6100596100543660046102d4565b61009d565b005b61005961006936600461030d565b610145565b61008161007c366004610358565b6101f6565b6040516001600160a01b03909116815260200160405180910390f35b336001600160a01b037f000000000000000000000000000000000000000000000000000000000000000016146100e6576040516301aa4cc960e41b815260040160405180910390fd5b604051637b37e56160e01b81526001600160a01b038281166004830152831690637b37e56190602401600060405180830381600087803b15801561012957600080fd5b505af115801561013d573d6000803e3d6000fd5b505050505050565b336001600160a01b037f0000000000000000000000000000000000000000000000000000000000000000161461018e576040516301aa4cc960e41b815260040160405180910390fd5b604051636d43542160e01b81526001600160a01b0383811660048301528281166024830152841690636d43542190604401600060405180830381600087803b1580156101d957600080fd5b505af11580156101ed573d6000803e3d6000fd5b50505050505050565b6000336001600160a01b037f00000000000000000000000000000000000000000000000000000000000000001614610241576040516301aa4cc960e41b815260040160405180910390fd5b604051631e5164ef60e21b8152600481018490526001600160a01b03838116602483015285169063794593bc906044016020604051808303816000875af1158015610290573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906102b4919061038f565b949350505050565b6001600160a01b03811681146102d157600080fd5b50565b600080604083850312156102e757600080fd5b82356102f2816102bc565b91506020830135610302816102bc565b809150509250929050565b60008060006060848603121561032257600080fd5b833561032d816102bc565b9250602084013561033d816102bc565b9150604084013561034d816102bc565b809150509250925092565b60008060006060848603121561036d57600080fd5b8335610378816102bc565b925060208401359150604084013561034d816102bc565b6000602082840312156103a157600080fd5b81516103ac816102bc565b939250505056fea2646970667358221220cf5c5c029d4895631072969b0034e7ce0588d405885351c9962b96db8173a51164736f6c634300080e0033000000000000000000000000939c8d89ebc11fa45e576215e2353673ad0ba18a00000000000000000000000000000000000000000000000000000000000000";
+	}
+
+	function conduitCreatorDeploymentAddress() internal pure returns (address) {
+		return address(0x0000007B02230091A7ED01230072f7006A004D60);
+	}
+
+	function conduitCreatorDeployment() internal pure returns (DeploymentOperation memory) {
+		return DeploymentOperation({
+			deploymentTarget: conduitCreatorDeploymentTarget,
+			deploymentCall: conduitCreatorDeploymentCall,
+			deploymentAddress: conduitCreatorDeploymentAddress,
+			configurationCheck: deploymentCheck
+		});
+	}
+
+	// Address that can deploy the canonical OpenSea conduit
+	function conduitDeployer() internal pure returns (address) {
+		return address(0x939C8d89EBC11fA45e576215E2353673AD0bA18A);
+	}
+
+	// For deploying the canonican OpenSea conduit using the conduit creator
+	function conduitDeploymentTarget() internal pure returns (address) {
+		return conduitCreatorDeploymentAddress();
+	}
+
+	function conduitDeploymentCall() internal pure returns (bytes memory) {
+		return hex"c773d1ee00000000000000000000000000000000f9490004c11cef243f5400493c00ad630000007b02230091a7ed01230072f7006a004d60a8d4e71d599b8104250f0000000000000000000000000000939c8d89ebc11fa45e576215e2353673ad0ba18a";
+	}
+
+	function conduitDeploymentAddress() internal pure returns (address) {
+		return address(0x1E0049783F008A0085193E00003D00cd54003c71);
+	}
+
+	function conduitDeployment() internal pure returns (DeploymentOperation memory) {
+		return DeploymentOperation({
+			deploymentTarget: conduitDeploymentTarget,
+			deploymentCall: conduitDeploymentCall,
+			deploymentAddress: conduitDeploymentAddress,
+			configurationCheck: deploymentCheck
+		});
+	}
+
+	function conduitConfigurationTarget() internal pure returns (address) {
+		return conduitControllerDeploymentAddress();
+	}
+
+	function conduitConfigurationCall() internal pure returns (bytes memory) {
+		return abi.encodeWithSelector(bytes4(0x13ad9cab), conduitDeploymentAddress(), seaportOnePointFiveDeploymentAddress(), true);
+	}
+
+	function conduitConfigurationAddress() internal pure returns (address) {
+		return address(0x1E0049783F008A0085193E00003D00cd54003c71);
+	}
+
+	function conduitConfiguration() internal pure returns (DeploymentOperation memory) {
+		return DeploymentOperation({
+			deploymentTarget: conduitConfigurationTarget,
+			deploymentCall: conduitConfigurationCall,
+			deploymentAddress: conduitConfigurationAddress,
+			configurationCheck: channelCheck
 		});
 	}
 
 	// Lay out the full sequence, not including the initial basic create2 factory deploy
 	function deploymentSequence() internal pure returns (function() internal pure returns (DeploymentOperation memory)[] memory sequence) {
-		sequence = new function() internal pure returns (DeploymentOperation memory)[](4);
+		sequence = new function() internal pure returns (DeploymentOperation memory)[](5);
 
 		sequence[0] = initialImmutableCreate2FactoryDeployment;
 		sequence[1] = immutableCreate2FactoryDeployment;
 		sequence[2] = conduitControllerDeployment;
 		sequence[3] = seaportOnePointFiveDeployment;
+		sequence[4] = conduitCreatorDeployment;
+	}
+
+	function configurationSequence() internal pure returns (function() internal pure returns (DeploymentOperation memory)[] memory sequence) {
+		sequence = new function() internal pure returns (DeploymentOperation memory)[](2);
+
+		sequence[0] = conduitDeployment;
+		sequence[1] = conduitConfiguration;
 	}
 
 	// Function for quickly checking whether or not a deployment has occurred
@@ -126,7 +230,7 @@ library SeaportDeployer {
 
 	// Function for performing a create2-based deployment
 	function execute(DeploymentOperation memory operation) private returns (bool ok) {
-		if (!check(operation)) {
+		if (!operation.configurationCheck(operation.deploymentAddress())) {
 			(bool success, ) = operation.deploymentTarget().call(operation.deploymentCall());
 			if (!success) {
 				assembly {
@@ -136,7 +240,7 @@ library SeaportDeployer {
 			}
 		}
 
-		return check(operation);
+		return operation.configurationCheck(operation.deploymentAddress());
 	}
 
 	// Function for performing a sequence of deployments
@@ -145,6 +249,35 @@ library SeaportDeployer {
 
 		for (uint256 i = 0; i < totalOperations; ++i) {
 			if (!execute(operations[i]())) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	// Execute from a specific caller
+	function execute(DeploymentOperation memory operation, Vm vm, address caller) private returns (bool ok) {
+		if (!operation.configurationCheck(operation.deploymentAddress())) {
+			vm.prank(caller);
+			(bool success, ) = operation.deploymentTarget().call(operation.deploymentCall());
+			if (!success) {
+				assembly {
+					returndatacopy(0, 0, returndatasize())
+					revert(0, returndatasize())
+				}
+			}
+		}
+
+		return operation.configurationCheck(operation.deploymentAddress());
+	}
+
+	// Function for performing a sequence of deployments from a specific caller
+	function execute(function() internal pure returns (DeploymentOperation memory)[] memory operations, Vm vm, address caller) private returns (bool) {
+		uint256 totalOperations = operations.length;
+
+		for (uint256 i = 0; i < totalOperations; ++i) {
+			if (!execute(operations[i](), vm, caller)) {
 				return false;
 			}
 		}
@@ -175,5 +308,21 @@ library SeaportDeployer {
 	function deploySeaport(Vm vm) internal {
         vm.etch(basicCreate2FactoryAddress(), basicCreate2FactoryCode());
         deployAndConfirm();
+	}
+
+	function deployAndConfigureOpenSeaConduit(Vm vm) internal {
+		if (conduitControllerDeploymentAddress().code.length == 0) {
+			revert("Conduit Controller not deployed");
+		}
+
+		if(!execute(configurationSequence(), vm, conduitDeployer())) {
+			revert("Configuration did not successfully complete");
+		}
+	}
+
+	// Execute the full deploy + configure sequence and do a basic sanity check
+	function deploySeaportAndConfigureConduit(Vm vm) internal {
+        deploySeaport(vm);
+        deployAndConfigureOpenSeaConduit(vm);
 	}
 }

@@ -14,7 +14,7 @@ contract CounterTest is Test {
         counter = new Counter();
         counter.setNumber(0);
 
-        vm.deploySeaport();
+        vm.deploySeaportAndConfigureConduit();
     }
 
     function test_Increment() public {
