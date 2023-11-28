@@ -1,6 +1,6 @@
 ## seaport-deploy
 
-A utility for deploying Seaport v1.5 and related contracts to new chains.
+A utility for deploying Seaport v1.5 and related contracts to local chains for use in testing.
 
 Include this repo as a submodule in your forge project:
 
