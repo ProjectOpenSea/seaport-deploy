@@ -5,8 +5,7 @@ A utility for deploying Seaport v1.5 and related contracts to local chains for u
 Include this repo as a submodule in your forge project:
 
 ```shell
-$ git submodule add https://github.com/ProjectOpenSea/seaport-deploy lib/seaport-deploy
-$ forge install
+$ forge install ProjectOpenSea/seaport-deploy
 ```
 
 Then, you can use it like so:
