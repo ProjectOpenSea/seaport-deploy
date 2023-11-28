@@ -1,6 +1,8 @@
 pragma solidity ^0.8.13;
 
-contract Payloads {
+import {Vm} from "forge-std/Vm.sol";
+
+library SeaportDeployer {
 	// Each create2-based deployment operation has a target (or the
 	// factory making the deployment), a call (or the data given to
 	// that factory), and an address the contract is deployed to.
@@ -168,5 +170,10 @@ contract Payloads {
 		if (seaportOnePointFiveDeploymentAddress().code.length == 0) {
 			revert("Deployment did not occur");
 		}
+	}
+
+	function deploySeaport(Vm vm) internal {
+        vm.etch(basicCreate2FactoryAddress(), basicCreate2FactoryCode());
+        deployAndConfirm();
 	}
 }
