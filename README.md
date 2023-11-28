@@ -14,7 +14,7 @@ pragma solidity ^0.8.13;
 
 import {Vm} from "forge-std/Vm.sol";
 import {Test} from "forge-std/Test.sol";
-import {SeaportDeployer} from "../lib/seaport-deploy/src/SeaportDeployer.sol";
+import {SeaportDeployer} from "seaport-deploy/src/SeaportDeployer.sol";
 
 contract MyTest is Test {
     using SeaportDeployer for Vm;
