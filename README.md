@@ -30,3 +30,5 @@ contract MyTest is Test {
     // tests here... they can now utilize Seaport 1.6 + related contracts locally
 }
 ```
+
+Be advised that you may need to manually set `evm_version='cancun'` or `evm_version='shanghai'` in your `foundry.toml` as Seaport 1.6 requires `PUSH0` support.
