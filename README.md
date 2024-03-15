@@ -1,6 +1,6 @@
 ## seaport-deploy
 
-A utility for deploying Seaport v1.5 and related contracts to local chains for use in testing.
+A utility for deploying Seaport v1.6 and related contracts to local chains for use in testing.
 
 Include this repo as a submodule in your forge project:
 
@@ -27,6 +27,6 @@ contract MyTest is Test {
         vm.deploySeaportAndConfigureConduit();
     }
 
-    // tests here... they can now utilize Seaport 1.5 + related contracts locally
+    // tests here... they can now utilize Seaport 1.6 + related contracts locally
 }
 ```
