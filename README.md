@@ -31,4 +31,4 @@ contract MyTest is Test {
 }
 ```
 
-Be advised that you may need to manually set `evm_version='cancun'` or `evm_version='shanghai'` in your `foundry.toml` as Seaport 1.6 requires `PUSH0` support.
+> Be advised that you may need to manually set `evm_version='cancun'` or `evm_version='shanghai'` in your `foundry.toml` as Seaport v1.6 requires `PUSH0` support.
