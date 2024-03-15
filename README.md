@@ -10,7 +10,7 @@ $ forge install ProjectOpenSea/seaport-deploy
 
 Then, you can use it like so:
 ```solidity
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.24;
 
 import {Vm} from "forge-std/Vm.sol";
 import {Test} from "forge-std/Test.sol";
