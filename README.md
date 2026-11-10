@@ -1,3 +1,6 @@
+> [!NOTE]
+> This repository is archived and no longer maintained. To deploy Seaport 1.6 and the ConduitController to a local chain, follow [Deploying](https://github.com/ProjectOpenSea/seaport/blob/main/docs/Deploying.md) in the seaport repo. Existing `forge install` pins keep working.
+
 ## seaport-deploy
 
 A utility for deploying Seaport v1.6 and related contracts to local chains for use in testing.
